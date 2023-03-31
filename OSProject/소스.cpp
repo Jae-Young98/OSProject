@@ -9,11 +9,12 @@ using namespace std;
 using std::thread;
 using std::mutex;
 
-void load(string str) {
-	int length = 0;
-	int i = 0;
-	int* arr = new int[1000000];
+int* arr = new int[1000000];
+int length = 0;
 
+void commandLoad(string str) {
+	int i = 0;
+	
 	ifstream ifs(str);
 
 	if (ifs.is_open()) {
@@ -23,16 +24,62 @@ void load(string str) {
 			length++;
 		}
 		cout << length << " integers loaded" << endl;
+		ifs.close();
 	} else {
-		cout << "invalid command" << endl;
+		cout << "load failed" << endl;
 	}
+}
+
+void commandHead() {
+	int cnt = 0; // integers counting
+	if (length > 0 && length <= 10) {
+		for (int i = 0; i < length - 1; i++) { 
+			cout << arr[i] << " ";
+		}
+		cout << arr[length - 1] << endl; // 마지막 정수 출력 이후 공백(space bar) 없이
+		cout << length << " integers" << endl;
+	} else if (length > 10) {
+		for (int i = 0; i < 9; i++) {
+			cout << arr[i] << " ";
+		}
+		cout << arr[9] << endl;
+		cnt++;
+		cout << cnt << " integers" << endl; // length << " integers" 로 수정 예정
+	} else {
+		cout << length << " integers" << endl;
+	}
+}
+
+void commandTail() {
+	int cnt = 0; // intgers counting
+	if (length > 0 && length <= 10) {
+		for (int i = 0; i < length - 1; i++) {
+			cout << arr[i] << " ";
+		}
+		cout << arr[length - 1] << endl;
+		cout << length << " integers" << endl;
+	} else if (length > 10) {
+		for (int i = length - 10; i < length - 1; i++) {
+			cout << arr[i] << " ";
+			cnt++;
+		}
+		cout << arr[length - 1] << endl;
+		cnt++;
+		cout << cnt << " integers" << endl; // length << " integers" 로 수정 예정
+	} else {
+		cout << length << " integers" << endl;
+	}
+}
+
+void commandExit() {
+	cout << "Bye!" << endl;
+	exit(0);
 }
 
 int main() {
 	string input;
 	string command1;
 	string command2;
-	string fileName;
 	
 	while (true) {
 		cout << ">> ";
@@ -41,17 +88,15 @@ int main() {
 		command2 = input.substr(input.find(" ") + 1, input.length()); // 공백 뒤 단어
 
 		if (command1 == "load") {
-			load(command2);
+			commandLoad(command2);
+		} else if (command1 == "head") {
+			commandHead();
+		} else if (command1 == "exit") {
+			commandExit();
+		} else if (command1 == "tail") {
+			commandTail();
 		} else {
 			cout << "invalid command" << endl;
 		}
-		/* 테스트 2 폐기예정
-		cin >> command >> fileName;
-		if (command == "load") {
-			load(fileName);
-		} else {
-			cout << "invalid command" << endl;
-		}
-		*/
 	}
 }
