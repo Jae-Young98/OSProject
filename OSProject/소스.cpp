@@ -31,7 +31,7 @@ void commandLoad(string str) {
 }
 
 void commandHead() {
-	int cnt = 0; // integers counting
+	// int cnt = 0; // integers counting
 	if (length > 0 && length <= 10) {
 		for (int i = 0; i < length - 1; i++) { 
 			cout << arr[i] << " ";
@@ -43,15 +43,15 @@ void commandHead() {
 			cout << arr[i] << " ";
 		}
 		cout << arr[9] << endl;
-		cnt++;
-		cout << cnt << " integers" << endl; // length << " integers" 로 수정 예정
+		// cnt++;
+		cout << length << " integers" << endl;
 	} else {
 		cout << length << " integers" << endl;
 	}
 }
 
 void commandTail() {
-	int cnt = 0; // intgers counting
+	// int cnt = 0; // intgers counting
 	if (length > 0 && length <= 10) {
 		for (int i = 0; i < length - 1; i++) {
 			cout << arr[i] << " ";
@@ -61,11 +61,11 @@ void commandTail() {
 	} else if (length > 10) {
 		for (int i = length - 10; i < length - 1; i++) {
 			cout << arr[i] << " ";
-			cnt++;
+			// cnt++;
 		}
 		cout << arr[length - 1] << endl;
-		cnt++;
-		cout << cnt << " integers" << endl; // length << " integers" 로 수정 예정
+		// cnt++;
+		cout << length << " integers" << endl;
 	} else {
 		cout << length << " integers" << endl;
 	}
