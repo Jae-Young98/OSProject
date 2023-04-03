@@ -73,6 +73,7 @@ void commandExit() {
 
 // thread init 함수
 // sum, prod, count, range
+// time 시간 측정
 
 int main() {
 	string input;
