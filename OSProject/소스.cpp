@@ -72,6 +72,7 @@ void commandExit() {
 }
 
 // thread init ÇÔ¼ö
+// sum, prod, count, range
 
 int main() {
 	string input;
