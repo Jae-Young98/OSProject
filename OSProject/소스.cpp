@@ -3,20 +3,33 @@
 #include <fstream>
 #include <thread>
 #include <mutex>
+#include <vector>
 #include <windows.h>
 
 using namespace std;
 using std::thread;
 using std::mutex;
 
+vector<int> dataSet;
+int threadNum = 1;
 int* arr = new int[1000000];
 int length = 0;
 
 void commandLoad(string str) {
-	int i = 0;
-	
+	// int i = 0;
+	dataSet.clear(); // 초기화
 	ifstream ifs(str);
 
+	if (ifs.is_open()) {
+		copy(istream_iterator<int>(ifs), istream_iterator<int>(), back_inserter(dataSet));
+		ifs.close();
+		cout << dataSet.size() << " integers loaded" << endl;
+	}
+	else {
+		cout << "load failed" << endl;
+	}
+	// copy(v.begin(), v.end(), ostream_iterator<int>(cout, " "));
+	/*
 	if (ifs.is_open()) {
 		while (!ifs.eof()) {
 			ifs >> arr[i];
@@ -28,9 +41,24 @@ void commandLoad(string str) {
 	} else {
 		cout << "load failed" << endl;
 	}
+	*/
 }
 
 void commandHead() {
+	if (dataSet.size() == 0) {
+		cout << dataSet.size() << " integers" << endl;
+	} else if (dataSet.size() <= 10) {
+		copy(dataSet.begin(), dataSet.end(), ostream_iterator<int>(cout, " "));
+		cout << endl;
+		cout << dataSet.size() << " integers" << endl;
+	} else {
+		for (int i = 0; i < 10; i++) {
+			cout << dataSet[i] << " ";
+		}
+		cout << endl;
+		cout << dataSet.size() << " integers" << endl;
+	}
+	/*
 	if (length > 0 && length <= 10) {
 		for (int i = 0; i < length - 1; i++) { 
 			cout << arr[i] << " ";
@@ -46,9 +74,24 @@ void commandHead() {
 	} else {
 		cout << length << " integers" << endl;
 	}
+	*/
 }
 
 void commandTail() {
+	if (dataSet.size() == 0) {
+		cout << dataSet.size() << " integers" << endl;
+	} else if (dataSet.size() <= 10) {
+		copy(dataSet.begin(), dataSet.end(), ostream_iterator<int>(cout, " "));
+		cout << endl;
+		cout << dataSet.size() << " integers" << endl;
+	} else {
+		for (int i = dataSet.size() - 10; i < dataSet.size(); i++) {
+			cout << dataSet[i] << " ";
+		}
+		cout << endl;
+		cout << dataSet.size() << " integers" << endl;
+	}
+	/*
 	if (length > 0 && length <= 10) {
 		for (int i = 0; i < length - 1; i++) {
 			cout << arr[i] << " ";
@@ -64,6 +107,7 @@ void commandTail() {
 	} else {
 		cout << length << " integers" << endl;
 	}
+	*/
 }
 
 void commandExit() {
@@ -71,6 +115,15 @@ void commandExit() {
 	exit(0);
 }
 
+bool checkNum(string str) {
+	bool x = false;
+	int num = stoi(str);
+	if (num >= 1 && num <= 8) {
+		x = true;
+	}
+
+	return x;
+}
 // thread init 함수
 // sum, prod, count, range
 // time 시간 측정
@@ -79,6 +132,7 @@ int main() {
 	string input;
 	string command1;
 	string command2;
+
 	
 	while (true) {
 		cout << ">> ";
@@ -94,7 +148,12 @@ int main() {
 			commandExit();
 		} else if (command1 == "tail") {
 			commandTail();
-		} else {
+		} //else if (command1 == "thread") {
+			//if (checkNum(command2)) {
+			//	cout << "test" << endl;
+			//}
+		//}
+		else {
 			cout << "invalid command" << endl;
 		}
 	}
