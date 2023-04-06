@@ -11,7 +11,6 @@ using std::thread;
 using std::mutex;
 
 vector<int> dataSet;
-vector<thread> workers;
 int threadNum = 1;
 
 
@@ -68,6 +67,9 @@ void funcSum(int start, int end, int* result) {
 		x += dataSet[i];
 	}
 	*result += x;
+
+	// test code
+	// printf("Thread %d to %d : %d \n", start, end, x);
 }
 
 void commandSum() {
@@ -77,18 +79,7 @@ void commandSum() {
 	int chunkSize = dataSet.size() / threadNum;
 	int remainder = dataSet.size() % threadNum;
 	vector<thread> t(threadNum);
-	/*
-	if (remainder > 0) {
-		for (int i = 0; i < threadNum - 1; i++) {
-			t.push_back(thread(funcSum, i * chunkSize, (i + 1) * chunkSize, &sum));
-		}
-		t.push_back(thread(funcSum, dataSet.size() - reminder, dataSet.size(), &sum));
-	} else {
-		for (int i = 0; i < threadNum; i++) {
-			t.push_back(thread(funcSum, i * chunkSize, (i + 1) * chunkSize, &sum));
-		}
-	}
-	*/
+
 	for (int i = 0; i < threadNum; i++) {
 		end += chunkSize;
 		if (remainder > 0) {
@@ -101,6 +92,7 @@ void commandSum() {
 	for (int i = 0; i < threadNum; i++) {
 		t[i].join();
 	}
+	sum %= 1000000;
 	cout << "[" << threadNum << " workers] " << "sum => " << sum << endl;
 }
 
@@ -151,7 +143,6 @@ int main() {
 			commandTail();
 		} else if (command1 == "thread") {
 			if (checkNum(command2)) {
-				// workers[threadNum];
 				cout << threadNum << " workers for each job" << endl;
 			} else {
 				cout << "invalid command" << endl;
