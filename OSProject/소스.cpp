@@ -69,7 +69,18 @@ void funcSum(int start, int end, int* result) {
 	*result += x;
 
 	// test code
-	// printf("Thread %d to %d : %d \n", start, end, x);
+	// printf("Thread %d to %d : %d \n", start, end - 1, x);
+}
+
+void funcProd(int start, int end, long long* result) {
+	long long int x = 1;
+	for (int i = start; i < end; i++) {
+		x *= dataSet[i];
+	}
+	*result *= x;
+
+	// test code
+	// printf("Thread %d to %d : %lld \n", start, end - 1, x);
 }
 
 void commandSum() {
@@ -96,6 +107,34 @@ void commandSum() {
 	cout << "[" << threadNum << " workers] " << "sum => " << sum << endl;
 }
 
+void commandProd() {
+	long long int prod = 1;
+	int start = 0;
+	int end = 0;
+	int chunkSize = dataSet.size() / threadNum;
+	int remainder = dataSet.size() % threadNum;
+	vector<thread> t(threadNum);
+
+	if (dataSet.size() == 0) { // load 하지 않고 prod 했을시 1 출력 되는것 예외처리
+		cout << "[" << threadNum << " workers] " << "prod => 0" << endl;
+	} else {
+		for (int i = 0; i < threadNum; i++) {
+			end += chunkSize;
+			if (remainder > 0) {
+				end++;
+				remainder--;
+			}
+			t[i] = thread(funcProd, start, end, &prod);
+			start = end;
+		}
+		for (int i = 0; i < threadNum; i++) {
+			t[i].join();
+		}
+		prod %= 1000000;
+		cout << "[" << threadNum << " workers] " << "prod => " << prod << endl;
+	}
+}
+
 void commandExit() {
 	cout << "Bye!" << endl;
 	exit(0);
@@ -118,7 +157,7 @@ bool checkNum(string str) {
 	}
 }
 
-// sum, prod, count, range
+// count, range
 // time 시간 측정
 
 int main() {
@@ -149,6 +188,8 @@ int main() {
 			}
 		} else if (command1 == "sum") {
 			commandSum();
+		} else if (command1 == "prod") {
+			commandProd();
 		}
 		else {
 			cout << "invalid command" << endl;
