@@ -11,12 +11,11 @@ using std::thread;
 using std::mutex;
 
 vector<int> dataSet;
+vector<thread> workers;
 int threadNum = 1;
-int* arr = new int[1000000];
-int length = 0;
+
 
 void commandLoad(string str) {
-	// int i = 0;
 	dataSet.clear(); // 초기화
 	ifstream ifs(str);
 
@@ -28,20 +27,6 @@ void commandLoad(string str) {
 	else {
 		cout << "load failed" << endl;
 	}
-	// copy(v.begin(), v.end(), ostream_iterator<int>(cout, " "));
-	/*
-	if (ifs.is_open()) {
-		while (!ifs.eof()) {
-			ifs >> arr[i];
-			i++;
-			length++;
-		}
-		cout << length << " integers loaded" << endl;
-		ifs.close();
-	} else {
-		cout << "load failed" << endl;
-	}
-	*/
 }
 
 void commandHead() {
@@ -58,23 +43,6 @@ void commandHead() {
 		cout << endl;
 		cout << dataSet.size() << " integers" << endl;
 	}
-	/*
-	if (length > 0 && length <= 10) {
-		for (int i = 0; i < length - 1; i++) { 
-			cout << arr[i] << " ";
-		}
-		cout << arr[length - 1] << endl; // 마지막 정수 출력 이후 공백(space bar) 없이
-		cout << length << " integers" << endl;
-	} else if (length > 10) {
-		for (int i = 0; i < 9; i++) {
-			cout << arr[i] << " ";
-		}
-		cout << arr[9] << endl;
-		cout << length << " integers" << endl;
-	} else {
-		cout << length << " integers" << endl;
-	}
-	*/
 }
 
 void commandTail() {
@@ -91,23 +59,49 @@ void commandTail() {
 		cout << endl;
 		cout << dataSet.size() << " integers" << endl;
 	}
+}
+
+
+void funcSum(int start, int end, int* result) {
+	int x = 0;
+	for (int i = start; i < end; i++) {
+		x += dataSet[i];
+	}
+	*result += x;
+}
+
+void commandSum() {
+	int sum = 0;
+	int start = 0;
+	int end = 0;
+	int chunkSize = dataSet.size() / threadNum;
+	int remainder = dataSet.size() % threadNum;
+	vector<thread> t(threadNum);
 	/*
-	if (length > 0 && length <= 10) {
-		for (int i = 0; i < length - 1; i++) {
-			cout << arr[i] << " ";
+	if (remainder > 0) {
+		for (int i = 0; i < threadNum - 1; i++) {
+			t.push_back(thread(funcSum, i * chunkSize, (i + 1) * chunkSize, &sum));
 		}
-		cout << arr[length - 1] << endl;
-		cout << length << " integers" << endl;
-	} else if (length > 10) {
-		for (int i = length - 10; i < length - 1; i++) {
-			cout << arr[i] << " ";
-		}
-		cout << arr[length - 1] << endl;
-		cout << length << " integers" << endl;
+		t.push_back(thread(funcSum, dataSet.size() - reminder, dataSet.size(), &sum));
 	} else {
-		cout << length << " integers" << endl;
+		for (int i = 0; i < threadNum; i++) {
+			t.push_back(thread(funcSum, i * chunkSize, (i + 1) * chunkSize, &sum));
+		}
 	}
 	*/
+	for (int i = 0; i < threadNum; i++) {
+		end += chunkSize;
+		if (remainder > 0) {
+			end++;
+			remainder--;
+		}
+		t[i] = thread(funcSum, start, end, &sum);
+		start = end;
+	}
+	for (int i = 0; i < threadNum; i++) {
+		t[i].join();
+	}
+	cout << "[" << threadNum << " workers] " << "sum => " << sum << endl;
 }
 
 void commandExit() {
@@ -115,16 +109,23 @@ void commandExit() {
 	exit(0);
 }
 
+// 스레드 생성시 유효한 숫자인지 판별
 bool checkNum(string str) {
-	bool x = false;
-	int num = stoi(str);
-	if (num >= 1 && num <= 8) {
-		x = true;
+	bool x;
+	x = atoi(str.c_str()) != 0 || str.compare("0") == 0;
+	if (x) {
+		int num = atoi(str.c_str());
+		if (num >= 1 && num <= 8) {
+			threadNum = num;
+			return true;
+		} else {
+			return false;
+		}
+	} else {
+		return false;
 	}
-
-	return x;
 }
-// thread init 함수
+
 // sum, prod, count, range
 // time 시간 측정
 
@@ -148,11 +149,16 @@ int main() {
 			commandExit();
 		} else if (command1 == "tail") {
 			commandTail();
-		} //else if (command1 == "thread") {
-			//if (checkNum(command2)) {
-			//	cout << "test" << endl;
-			//}
-		//}
+		} else if (command1 == "thread") {
+			if (checkNum(command2)) {
+				// workers[threadNum];
+				cout << threadNum << " workers for each job" << endl;
+			} else {
+				cout << "invalid command" << endl;
+			}
+		} else if (command1 == "sum") {
+			commandSum();
+		}
 		else {
 			cout << "invalid command" << endl;
 		}
