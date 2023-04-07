@@ -16,6 +16,7 @@ int threadNum = 1;
 
 void commandLoad(string str) {
 	dataSet.clear(); // 초기화
+	threadNum = 1; // 스레드 수 초기화
 	ifstream ifs(str);
 
 	if (ifs.is_open()) {

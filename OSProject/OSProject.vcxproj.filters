@@ -23,5 +23,11 @@
     <Text Include="integers.txt">
       <Filter>리소스 파일</Filter>
     </Text>
+    <Text Include="test1.txt">
+      <Filter>리소스 파일</Filter>
+    </Text>
+    <Text Include="test2.txt">
+      <Filter>리소스 파일</Filter>
+    </Text>
   </ItemGroup>
 </Project>
