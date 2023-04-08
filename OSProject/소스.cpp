@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <chrono>
 #include <windows.h>
 
 using namespace std;
@@ -188,9 +189,17 @@ int main() {
 				cout << "invalid command" << endl;
 			}
 		} else if (command1 == "sum") {
+			auto start = chrono::high_resolution_clock::now();
 			commandSum();
+			auto end = chrono::high_resolution_clock::now();
+			auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
+			cout << duration.count() << " ms" << endl;
 		} else if (command1 == "prod") {
+			auto start = chrono::high_resolution_clock::now();
 			commandProd();
+			auto end = chrono::high_resolution_clock::now();
+			auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
+			cout << duration.count() << " ms" << endl;
 		}
 		else {
 			cout << "invalid command" << endl;
