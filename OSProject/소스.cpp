@@ -14,9 +14,14 @@ using std::mutex;
 vector<int> dataSet;
 string command1;
 string command2;
+string rangeX;
+string rangeY;
 int threadNum = 1;
-int key;
+int key; // count x
+int x; // range x
+int y; // range y
 
+// 소요 시간 출력을 깨끗하게 못할까?
 
 void commandLoad(string str) {
 	dataSet.clear(); // 초기화
@@ -89,13 +94,29 @@ void funcProd(int start, int end, long long* result) {
 }
 
 void funcCount(int start, int end, int* result) {
-	int x = 0;
+	int count = 0;
 	for (int i = start; i < end; i++) {
 		if (dataSet[i] == key) {
-			x++;
+			count++;
 		}
 	}
-	*result += x;
+	*result += count;
+
+	// test code
+	// printf("Thread %d to %d : %d \n", start, end - 1, count);
+}
+
+void funcRange(int start, int end, int* result) {
+	int rangeCnt = 0;
+	for (int i = start; i < end; i++) {
+		if (dataSet[i] >= x && dataSet[i] <= y) {
+			rangeCnt++;
+		}
+	}
+	*result += rangeCnt;
+
+	// test code
+	// printf("Thread %d to %d : %d \n", start, end - 1, rangeCnt);
 }
 
 void commandSum() {
@@ -174,6 +195,29 @@ void commandCount() {
 	cout << "[" << threadNum << " workers] " << "count " << key << " => " << cnt << endl;
 }
 
+void commandRange() {
+	int cnt = 0;
+	int start = 0;
+	int end = 0;
+	int chunkSize = dataSet.size() / threadNum;
+	int remainder = dataSet.size() % threadNum;
+	vector<thread> t(threadNum);
+
+	for (int i = 0; i < threadNum; i++) {
+		end += chunkSize;
+		if (remainder > 0) {
+			end++;
+			remainder--;
+		}
+		t[i] = thread(funcRange, start, end, &cnt);
+		start = end;
+	}
+	for (int i = 0; i < threadNum; i++) {
+		t[i].join();
+	}
+	cout << "[" << threadNum << " workers] " << "range " << x << ".." << y << " => " << cnt << endl;
+}
+
 // 유효한 숫자인지 판별
 bool checkNum(string cmd1, string cmd2) {
 	bool x;
@@ -201,7 +245,41 @@ void commandExit() {
 	exit(0);
 }
 
-//  range
+// range x..y 유효한 명령어 판별
+bool getRange(string str) {
+	int dotCnt = 0;
+	int previous = 0;
+	int current = 0;
+
+	for (int i = 0; i < command2.length(); i++) {
+		if (command2.find(".") == -1) {
+			break;
+		}
+		else if (command2.find(".", i) <= i) {
+			dotCnt++;
+		}
+	}
+	
+	// ..을 기준으로 x, y를 나누기 때문에 .(dot)이 2개 필요
+	if (dotCnt == 2) {
+		current = command2.find(".");
+		rangeX = command2.substr(previous, current - previous); // x 값
+		previous = current + 2;
+		current = command2.find(".", previous);
+		rangeY = command2.substr(previous, current - previous); // y 값
+		x = stoi(rangeX);
+		y = stoi(rangeY);
+		if (x > y) {
+			return false;
+		} else {
+			return true;
+		}
+	} else {
+		return false;
+	}
+	// x, y 값 출력 테스트
+	// cout << rangeX << " " << rangeY << endl;
+}
 
 int main() {
 	string input;
@@ -242,6 +320,16 @@ int main() {
 			auto start = chrono::high_resolution_clock::now();
 			if (checkNum(command1, command2)) { // command2가 숫자로 들어오는지?
 				commandCount();
+				auto end = chrono::high_resolution_clock::now();
+				auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
+				cout << duration.count() << " ms" << endl;
+			} else {
+				cout << "invalid command" << endl;
+			}
+		} else if (command1 == "range") {
+			auto start = chrono::high_resolution_clock::now();
+			if (getRange(command2)) {
+				commandRange();
 				auto end = chrono::high_resolution_clock::now();
 				auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
 				cout << duration.count() << " ms" << endl;
