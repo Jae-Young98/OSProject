@@ -88,6 +88,16 @@ void funcProd(int start, int end, long long* result) {
 	// printf("Thread %d to %d : %lld \n", start, end - 1, x);
 }
 
+void funcCount(int start, int end, int* result) {
+	int x = 0;
+	for (int i = start; i < end; i++) {
+		if (dataSet[i] == key) {
+			x++;
+		}
+	}
+	*result += x;
+}
+
 void commandSum() {
 	int sum = 0;
 	int start = 0;
@@ -140,48 +150,6 @@ void commandProd() {
 	}
 }
 
-// 유효한 숫자인지 판별
-bool checkNum(string cmd1, string cmd2) {
-	/*
-	int num = stoi(str);
-	if (num >= 1 && num <= 8) {
-		threadNum = num;
-		cout << threadNum << " workers for each job" << endl;
-	} else {
-		cout << "invalid command" << endl;
-	}
-	*/
-	bool x;
-	x = atoi(cmd2.c_str()) != 0 || cmd2.compare("0") == 0;
-	if (x) {
-		if (cmd1 == "count") {
-			return true;
-		}
-		int num = atoi(cmd2.c_str());
-		if (num >= 1 && num <= 8) {
-			threadNum = num;
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-	else {
-		return false;
-	}
-}
-
-
-void funcCount(int start, int end, int* result) {
-	int x = 0;
-	for (int i = start; i < end; i++) {
-		if (dataSet[i] == key) {
-			x++;
-		}
-	}
-	*result += x;
-}
-
 void commandCount() {
 	int cnt = 0;
 	key = stoi(command2);
@@ -206,18 +174,37 @@ void commandCount() {
 	cout << "[" << threadNum << " workers] " << "count " << key << " => " << cnt << endl;
 }
 
+// 유효한 숫자인지 판별
+bool checkNum(string cmd1, string cmd2) {
+	bool x;
+	x = atoi(cmd2.c_str()) != 0 || cmd2.compare("0") == 0; // 숫자가 아니면 0, 숫자이면 0이 아닌 다른 수
+	if (x) {
+		if (cmd1 == "count") {
+			return true;
+		}
+		int num = atoi(cmd2.c_str());
+		if (num >= 1 && num <= 8) {
+			threadNum = num;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	else {
+		return false;
+	}
+}
+
 void commandExit() {
 	cout << "Bye!" << endl;
 	exit(0);
 }
 
-
 //  range
 
 int main() {
 	string input;
-	
-
 	
 	while (true) {
 		cout << ">> ";
@@ -234,7 +221,6 @@ int main() {
 		} else if (command1 == "tail") {
 			commandTail();
 		} else if (command1 == "thread") {
-			// checkNum(command2);
 			if (checkNum(command1, command2)) {
 				cout << threadNum << " workers for each job" << endl;
 			} else {
@@ -254,14 +240,14 @@ int main() {
 			cout << duration.count() << " ms" << endl;
 		} else if (command1 == "count") {
 			auto start = chrono::high_resolution_clock::now();
-			if (checkNum(command1, command2)) {
+			if (checkNum(command1, command2)) { // command2가 숫자로 들어오는지?
 				commandCount();
+				auto end = chrono::high_resolution_clock::now();
+				auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
+				cout << duration.count() << " ms" << endl;
 			} else {
 				cout << "invalid command" << endl;
 			}
-			auto end = chrono::high_resolution_clock::now();
-			auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
-			cout << duration.count() << " ms" << endl;
 		}
 		else {
 			cout << "invalid command" << endl;
