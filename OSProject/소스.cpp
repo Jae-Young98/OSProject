@@ -12,7 +12,10 @@ using std::thread;
 using std::mutex;
 
 vector<int> dataSet;
+string command1;
+string command2;
 int threadNum = 1;
+int key;
 
 
 void commandLoad(string str) {
@@ -137,35 +140,83 @@ void commandProd() {
 	}
 }
 
+// 유효한 숫자인지 판별
+bool checkNum(string cmd1, string cmd2) {
+	/*
+	int num = stoi(str);
+	if (num >= 1 && num <= 8) {
+		threadNum = num;
+		cout << threadNum << " workers for each job" << endl;
+	} else {
+		cout << "invalid command" << endl;
+	}
+	*/
+	bool x;
+	x = atoi(cmd2.c_str()) != 0 || cmd2.compare("0") == 0;
+	if (x) {
+		if (cmd1 == "count") {
+			return true;
+		}
+		int num = atoi(cmd2.c_str());
+		if (num >= 1 && num <= 8) {
+			threadNum = num;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	else {
+		return false;
+	}
+}
+
+
+void funcCount(int start, int end, int* result) {
+	int x = 0;
+	for (int i = start; i < end; i++) {
+		if (dataSet[i] == key) {
+			x++;
+		}
+	}
+	*result += x;
+}
+
+void commandCount() {
+	int cnt = 0;
+	key = stoi(command2);
+	int start = 0;
+	int end = 0;
+	int chunkSize = dataSet.size() / threadNum;
+	int remainder = dataSet.size() % threadNum;
+	vector<thread> t(threadNum);
+
+	for (int i = 0; i < threadNum; i++) {
+		end += chunkSize;
+		if (remainder > 0) {
+			end++;
+			remainder--;
+		}
+		t[i] = thread(funcCount, start, end, &cnt);
+		start = end;
+	}
+	for (int i = 0; i < threadNum; i++) {
+		t[i].join();
+	}
+	cout << "[" << threadNum << " workers] " << "count " << key << " => " << cnt << endl;
+}
+
 void commandExit() {
 	cout << "Bye!" << endl;
 	exit(0);
 }
 
-// 스레드 생성시 유효한 숫자인지 판별
-bool checkNum(string str) {
-	bool x;
-	x = atoi(str.c_str()) != 0 || str.compare("0") == 0;
-	if (x) {
-		int num = atoi(str.c_str());
-		if (num >= 1 && num <= 8) {
-			threadNum = num;
-			return true;
-		} else {
-			return false;
-		}
-	} else {
-		return false;
-	}
-}
 
-// count, range
-// time 시간 측정
+//  range
 
 int main() {
 	string input;
-	string command1;
-	string command2;
+	
 
 	
 	while (true) {
@@ -183,7 +234,8 @@ int main() {
 		} else if (command1 == "tail") {
 			commandTail();
 		} else if (command1 == "thread") {
-			if (checkNum(command2)) {
+			// checkNum(command2);
+			if (checkNum(command1, command2)) {
 				cout << threadNum << " workers for each job" << endl;
 			} else {
 				cout << "invalid command" << endl;
@@ -197,6 +249,16 @@ int main() {
 		} else if (command1 == "prod") {
 			auto start = chrono::high_resolution_clock::now();
 			commandProd();
+			auto end = chrono::high_resolution_clock::now();
+			auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
+			cout << duration.count() << " ms" << endl;
+		} else if (command1 == "count") {
+			auto start = chrono::high_resolution_clock::now();
+			if (checkNum(command1, command2)) {
+				commandCount();
+			} else {
+				cout << "invalid command" << endl;
+			}
 			auto end = chrono::high_resolution_clock::now();
 			auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
 			cout << duration.count() << " ms" << endl;
