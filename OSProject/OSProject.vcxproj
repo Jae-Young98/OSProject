@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="소스.cpp" />
+    <ClCompile Include="hmachine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="integers.txt" />
