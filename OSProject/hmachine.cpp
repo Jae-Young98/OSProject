@@ -70,51 +70,45 @@ void commandTail() {
 
 
 void funcSum(int start, int end, int* result) {
-	int x = 0;
 	for (int i = start; i < end; i++) {
-		x += dataSet[i];
+		*result += dataSet[i];
+		*result %= 1000000;
 	}
-	*result += x;
 
 	// test code
-	// printf("Thread %d to %d : %d \n", start, end - 1, x);
+	// printf("dataSet %d to %d : %d \n", start, end - 1, x);
 }
 
-void funcProd(int start, int end, long long* result) {
-	long long int x = 1;
+void funcProd(int start, int end, unsigned long long* result) {
 	for (int i = start; i < end; i++) {
-		x *= dataSet[i];
+		*result *= dataSet[i];
+		*result %= 1000000;
 	}
-	*result *= x;
 
 	// test code
-	// printf("Thread %d to %d : %lld \n", start, end - 1, x);
+	// printf("dataSet %d to %d : %llu \n", start, end - 1, *result);
 }
 
 void funcCount(int start, int end, int* result) {
-	int count = 0;
 	for (int i = start; i < end; i++) {
 		if (dataSet[i] == key) {
-			count++;
+			*result += 1;
 		}
 	}
-	*result += count;
 
 	// test code
-	// printf("Thread %d to %d : %d \n", start, end - 1, count);
+	// printf("dataSet %d to %d : %d \n", start, end - 1, count);
 }
 
 void funcRange(int start, int end, int* result) {
-	int rangeCnt = 0;
 	for (int i = start; i < end; i++) {
 		if (dataSet[i] >= x && dataSet[i] <= y) {
-			rangeCnt++;
+			*result += 1;
 		}
 	}
-	*result += rangeCnt;
 
 	// test code
-	// printf("Thread %d to %d : %d \n", start, end - 1, rangeCnt);
+	// printf("dataSet %d to %d : %d \n", start, end - 1, rangeCnt);
 }
 
 void commandSum() {
@@ -137,12 +131,11 @@ void commandSum() {
 	for (int i = 0; i < threadNum; i++) {
 		t[i].join();
 	}
-	sum %= 1000000;
 	cout << "[" << threadNum << " workers] " << "sum => " << sum << endl;
 }
 
 void commandProd() {
-	long long int prod = 1;
+	unsigned long long int prod = 1;
 	int start = 0;
 	int end = 0;
 	int chunkSize = dataSet.size() / threadNum;
@@ -164,7 +157,6 @@ void commandProd() {
 		for (int i = 0; i < threadNum; i++) {
 			t[i].join();
 		}
-		prod %= 1000000;
 		cout << "[" << threadNum << " workers] " << "prod => " << prod << endl;
 	}
 }
