@@ -21,8 +21,6 @@ int key; // count x
 int x; // range x
 int y; // range y
 
-// 소요 시간 출력을 깨끗하게 못할까?
-
 void commandLoad(string str) {
 	dataSet.clear(); // 초기화
 	threadNum = 1; // 스레드 수 초기화
