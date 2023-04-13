@@ -5,13 +5,15 @@
 #include <mutex>
 #include <vector>
 #include <chrono>
-#include <windows.h>
+#include <iomanip>
 
 using namespace std;
 using std::thread;
 using std::mutex;
 
 vector<int> dataSet;
+vector<string> logV;
+vector<double> logMS;
 string command1;
 string command2;
 string rangeX;
@@ -30,8 +32,7 @@ void commandLoad(string str) {
 		copy(istream_iterator<int>(ifs), istream_iterator<int>(), back_inserter(dataSet));
 		ifs.close();
 		cout << dataSet.size() << " integers loaded" << endl;
-	}
-	else {
+	} else {
 		cout << "load failed" << endl;
 	}
 }
@@ -118,6 +119,7 @@ void commandSum() {
 	int chunkSize = dataSet.size() / threadNum;
 	int remainder = dataSet.size() % threadNum;
 	vector<thread> t(threadNum);
+	logV.push_back(to_string(threadNum));
 
 	for (int i = 0; i < threadNum; i++) {
 		end += chunkSize;
@@ -132,6 +134,7 @@ void commandSum() {
 		t[i].join();
 	}
 	cout << "[" << threadNum << " workers] " << "sum => " << sum << endl;
+	logV.push_back(to_string(sum));
 }
 
 void commandProd() {
@@ -141,6 +144,7 @@ void commandProd() {
 	int chunkSize = dataSet.size() / threadNum;
 	int remainder = dataSet.size() % threadNum;
 	vector<thread> t(threadNum);
+	logV.push_back(to_string(threadNum));
 
 	if (dataSet.size() == 0) { // load 하지 않고 prod 했을시 1 출력 되는것 예외처리
 		cout << "[" << threadNum << " workers] " << "prod => 0" << endl;
@@ -159,6 +163,7 @@ void commandProd() {
 		}
 		cout << "[" << threadNum << " workers] " << "prod => " << prod << endl;
 	}
+	logV.push_back(to_string(prod));
 }
 
 void commandCount() {
@@ -169,6 +174,7 @@ void commandCount() {
 	int chunkSize = dataSet.size() / threadNum;
 	int remainder = dataSet.size() % threadNum;
 	vector<thread> t(threadNum);
+	logV.push_back(to_string(threadNum));
 
 	for (int i = 0; i < threadNum; i++) {
 		end += chunkSize;
@@ -183,6 +189,7 @@ void commandCount() {
 		t[i].join();
 	}
 	cout << "[" << threadNum << " workers] " << "count " << key << " => " << cnt << endl;
+	logV.push_back(to_string(cnt));
 }
 
 void commandRange() {
@@ -192,6 +199,7 @@ void commandRange() {
 	int chunkSize = dataSet.size() / threadNum;
 	int remainder = dataSet.size() % threadNum;
 	vector<thread> t(threadNum);
+	logV.push_back(to_string(threadNum));
 
 	for (int i = 0; i < threadNum; i++) {
 		end += chunkSize;
@@ -206,6 +214,7 @@ void commandRange() {
 		t[i].join();
 	}
 	cout << "[" << threadNum << " workers] " << "range " << x << ".." << y << " => " << cnt << endl;
+	logV.push_back(to_string(cnt));
 }
 
 // 유효한 숫자인지 판별
@@ -220,12 +229,10 @@ bool checkNum(string cmd1, string cmd2) {
 		if (num >= 1 && num <= 8) {
 			threadNum = num;
 			return true;
-		}
-		else {
+		} else {
 			return false;
 		}
-	}
-	else {
+	} else {
 		return false;
 	}
 }
@@ -244,12 +251,11 @@ bool getRange(string str) {
 	for (int i = 0; i < command2.length(); i++) {
 		if (command2.find(".") == -1) {
 			break;
-		}
-		else if (command2.find(".", i) <= i) {
+		} else if (command2.find(".", i) <= i) {
 			dotCnt++;
 		}
 	}
-	
+
 	// ..을 기준으로 x, y를 나누기 때문에 .(dot)이 2개 필요
 	if (dotCnt == 2) {
 		current = command2.find(".");
@@ -271,9 +277,45 @@ bool getRange(string str) {
 	// cout << rangeX << " " << rangeY << endl;
 }
 
+// 로그 출력
+void commandLog() {
+	int idx = 1;
+	int k = 0;
+	int n = 0;
+
+	if (logV.size() == 0) { // 로그가 비어있으면
+		cout << "log does not exist" << endl;
+	} else {
+		cout << "index" << setw(20) << "integers" << setw(20) << "command" << setw(20) << "thread" << setw(20) << "result" << setw(20) << "ms" << endl;
+		for (int i = 0; i < logV.size() / 4; i++) {
+			if (i >= 1) {
+				k += 4;
+			}
+			cout << setw(5) << idx;
+			for (int j = 0; j < 4; j++) {
+				cout << setw(20) << logV[j + k];
+			}
+			printf("%20.2f\n", logMS[n]);
+			n++;
+			idx++;
+		}
+	}
+}
+
+void clearLog() {
+	if (logV.size() == 0 && logMS.size() == 0) {
+		cout << "log does not exist" << endl;
+	} else {
+		logV.clear();
+		logMS.clear();
+		cout << "log has been cleard" << endl;
+	}
+}
+
 int main() {
 	string input;
-	
+	string str;
+
 	while (true) {
 		cout << ">> ";
 		getline(cin, input);
@@ -295,39 +337,58 @@ int main() {
 				cout << "invalid command" << endl;
 			}
 		} else if (command1 == "sum") {
+			logV.push_back(to_string(dataSet.size()));
+			logV.push_back(command1);
 			auto start = chrono::high_resolution_clock::now();
 			commandSum();
 			auto end = chrono::high_resolution_clock::now();
-			auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
-			cout << duration.count() << " ms" << endl;
+			chrono::duration<double, milli> ms = end - start;
+			printf("%.2fms\n", ms.count());
+			logMS.push_back(ms.count());
+
 		} else if (command1 == "prod") {
+			logV.push_back(to_string(dataSet.size()));
+			logV.push_back(command1);
 			auto start = chrono::high_resolution_clock::now();
 			commandProd();
 			auto end = chrono::high_resolution_clock::now();
-			auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
-			cout << duration.count() << " ms" << endl;
+			chrono::duration<double, milli> ms = end - start;
+			printf("%.2fms\n", ms.count());
+			logMS.push_back(ms.count());
 		} else if (command1 == "count") {
-			auto start = chrono::high_resolution_clock::now();
 			if (checkNum(command1, command2)) { // command2가 숫자로 들어오는지?
+				logV.push_back(to_string(dataSet.size()));
+				logV.push_back(input);
+				auto start = chrono::high_resolution_clock::now();
 				commandCount();
 				auto end = chrono::high_resolution_clock::now();
-				auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
-				cout << duration.count() << " ms" << endl;
+				chrono::duration<double, milli> ms = end - start;
+				printf("%.2fms\n", ms.count());
+				logMS.push_back(ms.count());
 			} else {
 				cout << "invalid command" << endl;
 			}
 		} else if (command1 == "range") {
-			auto start = chrono::high_resolution_clock::now();
 			if (getRange(command2)) {
+				logV.push_back(to_string(dataSet.size()));
+				logV.push_back(input);
+				auto start = chrono::high_resolution_clock::now();
 				commandRange();
 				auto end = chrono::high_resolution_clock::now();
-				auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
-				cout << duration.count() << " ms" << endl;
+				chrono::duration<double, milli> ms = end - start;
+				printf("%.2fms\n", ms.count());
+				logMS.push_back(ms.count());
 			} else {
 				cout << "invalid command" << endl;
 			}
-		}
-		else {
+		} else if (command1 == "log") {
+			if (command2 == "clear") { // 로그 비우기
+				clearLog();
+			}
+			else {
+				commandLog();
+			}
+		} else {
 			cout << "invalid command" << endl;
 		}
 	}
